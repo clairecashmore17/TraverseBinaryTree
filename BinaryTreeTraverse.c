@@ -1,21 +1,18 @@
-// Claire Cashmore
-// CS315 Homework
-// Traversal through a BST
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+typedef struct binarySearchNode{
+   char userValue;
+   char userString[10];
+   struct binarySearchNode* right;
+   struct binarySearchNode* left;
+} BSTN; //BSTN = Binary Search Node
 
-typedef struct binarySearchTreeNode{
-  char userValue;
-  char userString[10];
-  struct binarySearchTreeNode *right;
-  struct binarySearchTreeNode *left;
-}BSTN;
-
-typedef struct binarySearchTreeStack{
-  struct binarySearchTreeStack *next;
-  BSTN* addressOfBSTN;
+typedef struct binarySearchTreeptrToStack{
+   struct binarySearchTreeptrToStack* next;
+   BSTN* addressOfBSTN;
 }top;
 
 void insert(BSTN** BST, BSTN* ptrToNewTemp);
@@ -24,111 +21,99 @@ void preorder(BSTN** BST, top* ptrToStack);
 void find(BSTN** BST, top* ptrToStack, char userInput);
 void push(BSTN* traversePoint, top** ptrToPtrToStack);
 BSTN* pop(top** ptrToPtrtoStack);
-
-int stackIsEmpty(top *stack);
+int stackIsEmpty(top *ptrToStack);
 
 int main(){
-   BSTN *BST = NULL;
-   BSTN *ptrToNewTemp = NULL;
-   top* stack = NULL;
-   char userChar = 'o';
-   char userString[10];
+   BSTN* BST = NULL; //BST = Binary Search Tree
+   BSTN* temp = NULL;
+   top* ptrToStack = NULL;
+   char userChar;
+   char userCharString[10];
    
-   printf("Select an option: i for insert, f for Find, q for Quit: ");
-   scanf(" %c", &userChar);
+   printf("Enter an i to insert, a f to traverse, and a q to exit: ");
+ 
    
-     while(userChar != 'q'){
-       if(userChar == 'i'){
-         printf("Enter a character to be inserted: ");
+   scanf(" %c",&userChar);
+   
+   while(userChar != 'q'){
+      if(userChar == 'i'){
+         printf("\nEnter a character to be inserted: ");
          scanf(" %c",&userChar);
          printf("Enter a string: ");
-         scanf("%s", &userString);
-              
-         ptrToNewTemp = malloc(sizeof(BSTN));
-         ptrToNewTemp->userValue = userChar;
-         strcpy(ptrToNewTemp->userString,userString);
+         scanf("%s",userCharString);
          
-         insert(&BST, ptrToNewTemp);
-         preorder(&BST, stack);
-         inorder(&BST, stack);  
+         temp = malloc(sizeof(BSTN));
+         temp->userValue = userChar;
+         strcpy(temp->userString,userCharString);
          
-       }
-       else if((userChar == 'f')&&(BST == NULL)){
-         printf("\n Your list is empty \n");
-       }
-       else if(userChar =='f'){
-         printf("Enter the character you wish to find: ");
-         scanf(" %c", &userChar);
-         find(&BST,stack,userChar);
-       }
-       else{
-         printf("\nNot an option. Try Again.\n");
-       }
-        printf("Select an option: i for insert, f for Find, q for Quit: ");
-        scanf(" %c", &userChar);
-     }
-}
-
-
-void insert(BSTN** PointerToPointerToBST, BSTN* ptrToNewTemp){
-  // Create traverse pointer
-  BSTN* traversePointer;
-  //Create a flag for the traversal
-  int travFlag = 0;
-  
-  //If the binary search tree is empty
-  if(*PointerToPointerToBST == NULL){
-    *PointerToPointerToBST = ptrToNewTemp;
-    // Make children nodes NULL
-    (*PointerToPointerToBST)->left = NULL;
-    (*PointerToPointerToBST)->right = NULL;
-  }
-  else{
-    traversePointer = *PointerToPointerToBST;
-    while(travFlag != 1){
-      //Case nothing has been put in the left OR right node
-      if((traversePointer->right ==NULL)&&(traversePointer->left == NULL)){
-        if(traversePointer->userValue > ptrToNewTemp->userValue)
-          traversePointer->left = ptrToNewTemp;
-        else
-          traversePointer->right = ptrToNewTemp;
-        
-        //SET OUR FLAG TO FINISH TRAVERSE  
-        travFlag = 1;
+         insert(&BST, temp);
+         preorder(&BST, ptrToStack);
+         inorder(&BST, ptrToStack);
       }
-      //CASE: Nothing in the LEFT NODE
-      else if((traversePointer->right != NULL) && (traversePointer->left == NULL)){
-        if(traversePointer->userValue >ptrToNewTemp->userValue){
-          traversePointer->left = ptrToNewTemp;
-        }
-        else
-        traversePointer = traversePointer->right;
-        
-        // SET OUR FLAG TO FINISH TRAVERSE
-        travFlag = 1;
+      else if((userChar == 'f') && (BST == NULL)){
+         printf("\nEmpty List\n\n");
       }
-      // CASE: nothing in RIGHT NODE
-      else if((traversePointer->right == NULL) && (traversePointer->left != NULL)){
-        if(traversePointer->userValue < ptrToNewTemp->userValue){
-          traversePointer->right = ptrToNewTemp;
-        }
-        else 
-        traversePointer= traversePointer->left;
-        
-        //SET OUR FLAG
-        travFlag = 1;
+      else if(userChar == 'f'){
+         printf("Enter a character to be found: ");
+         scanf(" %c",&userChar);
+         find(&BST, ptrToStack, userChar);
       }
-      //CASE:
       else{
-        if(traversePointer->userValue > ptrToNewTemp->userValue)
-          traversePointer = traversePointer->left;
-        else
-          traversePointer = traversePointer->right;
+         printf("\nInvalid operation.\n\n");
       }
-    }
-  }
+
+      printf("\nEnter an i to insert, an f to find, and a q to exit: ");
+      
+      scanf(" %c",&userChar);
+   }
+   
+   return 0;
 }
-//FIND FUNCTION
+
+void insert(BSTN** BST, BSTN* temp){
+   BSTN* traversePointer;
+   int traversalFlag = 0;
+   if(*BST == NULL){
+      *BST = temp;
+      (*BST)->left = NULL;
+      (*BST)->right = NULL;
+   }
+   else{
+      traversePointer = *BST;
+      while(traversalFlag != 1 ){
+         if((traversePointer->right == NULL) && (traversePointer->left == NULL)){
+            if(traversePointer->userValue > temp->userValue)
+               traversePointer->left = temp;
+            else
+               traversePointer->right = temp;
+            traversalFlag = 1;
+         }
+         else if((traversePointer->right != NULL) && (traversePointer->left == NULL)){
+            if(traversePointer->userValue > temp->userValue){
+               traversePointer->left = temp;
+               traversalFlag = 1;
+            }
+            else
+               traversePointer = traversePointer->right;
+         }
+         else if((traversePointer->right == NULL) && (traversePointer->left != NULL)){
+            if(traversePointer->userValue < temp->userValue){
+               traversePointer->right = temp;
+               traversalFlag = 1;
+            }
+            else
+               traversePointer = traversePointer->left;
+         }
+         else{
+            if(traversePointer->userValue > temp->userValue)
+               traversePointer = traversePointer->left;
+            else
+               traversePointer = traversePointer->right;
+         }
+      }
+   }
+}
+
 void find(BSTN** BST, top* ptrToStack, char findChar){
    BSTN* traversePointer;
    int findFlag = 0;
@@ -147,65 +132,50 @@ void find(BSTN** BST, top* ptrToStack, char findChar){
       printf("Could not find %c\n", findChar);
 }
 
-// PREORDER IS VISIT, LEFT, RIGHT
 void preorder(BSTN** BST, top* ptrToStack){
-  BSTN* traversePointer = *BST;
-  int endFlag = 0;
-  printf("Current Preorder traversal: ");
-  while(endFlag != 1){
-    while(traversePointer != NULL){
-      // Print out the value we visited
-      printf( " %c ", traversePointer->userValue);
-      
-      //CASE: LEFT IS NOT EMPTY
-      if(traversePointer->left != NULL){
-      //Move the pointer to the left child and push
-        push(traversePointer, &ptrToStack);
-        traversePointer = traversePointer->left;
-      }
-      // CASE: LEFT IS EMPTY
-      else{
-      // Move pointer to the right child
-        traversePointer = traversePointer->right;
-      }
-    }
-    //If we now have NULL, end the preorder
-    if(ptrToStack == NULL){
-      endFlag = 1;
-      putchar('\n');
-    }
-    else{
-      traversePointer = pop(&ptrToStack);
-      traversePointer =  traversePointer->right;
-    }
-  }
-  
-}
-
-//IN ORDER IS LEFT, VISIT, RIGHT
-void inorder(BSTN** BST, top* ptrToStack){
-  BSTN* traversePointer = *BST;
-   int endFlag = 0;
-   printf("\nCurrent inorder traversal:");
-   while(endFlag != 1){
+   BSTN* traversePointer = *BST;
+   int finishedFlag = 0;
+   printf("\nPreorder traversal:");
+   while(finishedFlag != 1){
       while(traversePointer != NULL){
-      // CASE: LEFT CHILD IS NOT EMPTY
+         printf(" %c ",traversePointer->userValue);
          if(traversePointer->left != NULL){
-         // Push and move pointer to left
             push(traversePointer, &ptrToStack);
             traversePointer = traversePointer->left;
          }
-         //CASE: LEFT IS EMPTY
          else{
-           // VISIT NODE
+            traversePointer = traversePointer->right;
+         }
+      }
+      if(ptrToStack == NULL){
+         finishedFlag = 1;
+         putchar('\n');
+      }
+      else{
+         traversePointer = pop(&ptrToStack);
+         traversePointer = traversePointer->right;
+      }
+   }
+}
+
+void inorder(BSTN** BST, top* ptrToStack){
+   BSTN* traversePointer = *BST;
+   int finishedFlag = 0;
+   printf("\ninorder traversal:");
+   while(finishedFlag != 1){
+      while(traversePointer != NULL){
+         if(traversePointer->left != NULL){
+            push(traversePointer, &ptrToStack);
+            traversePointer = traversePointer->left;
+         }
+         else{
             printf(" %c ",traversePointer->userValue);
             traversePointer = traversePointer->right;
          }
       }
       if(ptrToStack == NULL){
-         endFlag = 1;
+         finishedFlag = 1;
          putchar('\n');
-         
       }
       else{
          traversePointer = pop(&ptrToStack);
@@ -215,22 +185,21 @@ void inorder(BSTN** BST, top* ptrToStack){
    }
 }
 
-
-void push(BSTN* traversePointer, top** ptrToPtrToStack){
-  top* temp;
-  temp = (top*) malloc(sizeof(BSTN));
-  
-  if(temp){
-  temp->addressOfBSTN = traversePointer;
-  temp->next = *ptrToPtrToStack;
-  *ptrToPtrToStack = temp; 
-  }
+void push(BSTN* traversePointer, top** ptrToStack){
+   top* temp;
+   temp = (top*) malloc(sizeof(BSTN));
+   if(temp){
+      temp->addressOfBSTN = traversePointer;
+      temp->next = *ptrToStack;
+      *ptrToStack = temp;
+   }
 }
-BSTN* pop(top** ptrToPtrToStack){
-  BSTN* temp;
-  if(*ptrToPtrToStack){
-    temp = (*ptrToPtrToStack)->addressOfBSTN;
-    *ptrToPtrToStack = (*ptrToPtrToStack)->next;
-  }
-  return temp;
+
+BSTN* pop(top** ptrToStack){
+   BSTN* temp;
+   if(*ptrToStack){
+      temp = (*ptrToStack)->addressOfBSTN;
+      *ptrToStack = (*ptrToStack)->next;
+   }
+   return temp;
 }
